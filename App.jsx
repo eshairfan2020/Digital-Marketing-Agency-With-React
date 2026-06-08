@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import "./styles/global.css";
+
 
 /* ============================================================
    DATA
@@ -266,8 +268,14 @@ function useInView(threshold = 0.1) {
 /* ============================================================
    SHARED COMPONENTS
 ============================================================ */
+//Yeh component kisi bhi element ko screen par aate waqt smoothly animate karta hai.
 function AnimatedSection({ children, className = "", delay = 0 }) {
+  //*children us content ko represent karta hai jo component ke andar likha gaya ho.*//
+  //"Jo bhi content AnimatedSection ke opening aur closing tag ke beech likha gaya hai, usko children yahan render karata hai.ye reuseable hota hai.
+  //Animated section only adds animations.Content uska nahi hai.Content parent component se aa raha hai.
+
   const [ref, inView] = useInView();
+  //Ref:Element ko observe karne ke liye use hota hai.inView:Jab element screen par nazar aata hai to true return karta hai.
   return (
     <div
       ref={ref}
@@ -277,24 +285,31 @@ function AnimatedSection({ children, className = "", delay = 0 }) {
         transform: inView ? "translateY(0)" : "translateY(40px)",
         transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
       }}
+      // If opacity 0 :translateY(40px):Element hidden hota hai aur thora neeche hota hai.
+      //If opacity 1:translateY(0):Element visible ho jata hai aur apni original position par aa jata hai.
+      //TRANSITION:Makes the animation smooth.
     >
       {children}
     </div>
   );
 }
-
 function Card3D({ children, className = "", style = {} }) {
+  //CARD3D:Mouse hover karne par card ko 3D tilt effect deta hai.
   const ref = useRef(null);
+  //useRef: Actuall HTML ko access karne ke liye use hota hai, taki hum mouse position ke hisab se card ko rotate kar sakein.
   const [rot, setRot] = useState({ x: 0, y: 0 });
+  //rot state:Card kitna rotate hoga uski values store karta hai.
   const [hov, setHov] = useState(false);
-
+//hov state:Check karta hai mouse card par hai ya nahi.
   const onMove = (e) => {
     const card = ref.current;
     const rect = card.getBoundingClientRect();
+    //Card ki width, height aur position deta hai.
     const cx = (e.clientX - rect.left) / rect.width - 0.5;
     const cy = (e.clientY - rect.top) / rect.height - 0.5;
     setRot({ x: cy * -12, y: cx * 12 });
   };
+  //rotation calculation:Calculate karta hai card kitna left, right, up ya down tilt karega.
 
   return (
     <div
@@ -305,13 +320,22 @@ function Card3D({ children, className = "", style = {} }) {
         transform: hov
           ? `perspective(800px) rotateX(${rot.x}deg) rotateY(${rot.y}deg) scale3d(1.04,1.04,1.04)`
           : "perspective(800px) rotateX(0) rotateY(0) scale3d(1,1,1)",
+          //PERSPECTIVE:Depth create karta hai jis se rotation 3D lagti hai.ROTATEX():Card ko upar ya neeche tilt karta hai.ROTATEY():Card ko left aur right tilt karta hai.
+          //SCALE3D:Card ko thora sa zoom karta hai.
         transition: hov ? "transform 0.1s ease" : "transform 0.5s ease",
         willChange: "transform",
+        //willChange CSS ka ek performance optimization hint hai.Browser ko pehle hi bata raha hai:"Is element ka transform property jaldi change hone wali hai,
+        //Browser pehle se resources allocate kar deta hai."Ye element animate hoga"Isliye hover animation zyada smooth lagti hai.
+        //ye browser ko pehle se batata hai ke transform property baar baar change hogi.Is se browser pehle prepare ho jata hai aur hover animations zyada smooth chalti hain.
         transformStyle: "preserve-3d",
+        //ye browser ko bolta hai 3D transform ko maintain rakho.Agar future mein card ke andar bhi 3D elements hon to child bhi 3D depth maintain karega.
       }}
+      //MouseMove Event:Jab mouse card ke upar move karta hai to yeh function run hota hai.
       onMouseMove={onMove}
       onMouseEnter={() => setHov(true)}
+      //3D effect start karta hai.
       onMouseLeave={() => { setHov(false); setRot({ x: 0, y: 0 }); }}
+      //Card ko wapas normal state mein le aata hai.
     >
       {children}
     </div>
@@ -322,21 +346,40 @@ function Card3D({ children, className = "", style = {} }) {
    NAVBAR
 ============================================================ */
 function Navbar({ page, setPage }) {
+  //STATE MANAGEMENT
+  //1.Scrolled state to track if the user has scrolled down the page, which affects the navbar's background and styling.
   const [scrolled, setScrolled] = useState(false);
+  //2.MenuOpen state to track whether the mobile menu is open or closed, which controls the visibility of the
+  //  mobile navigation overlay and the toggle button's appearance.
   const [menuOpen, setMenuOpen] = useState(false);
+  //*CUSTOM HOOKS*//
+  //1.useScrollProgress to calculate how far down the page the user has scrolled, 
+  // which is used to fill the progress bar at the top of the navbar.
   const progress = useScrollProgress();
-
+//FIRST useEffect: Scroll event listener add kar raha ha,aur check karta hai k user scroll kar raha hai ya nahi,also check karta hai ki user ne 20px se zyada scroll kiya hai ya nahi.
+//  Agar kiya hai to scrolled state true ho jati hai, jisse navbar ka background aur styling change hoti hai.
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", h);
     return () => window.removeEventListener("scroll", h);
   }, []);
+//SECOND useEffect: Jab menuOpen state change hoti hai, tab ye effect run hota hai. Jab menuOpen false hoga,tou page normally scroll hoga,Jab menuOpen true hoga,
+//  tou overflow:hidden hojaye ga.
+//Purpose:Mobile menu open hone par page scrolling disable karna.
+//Mobile menu open:☰ Click,Menu open:Full Screen Menu,Aur background page scroll nahi hota.Professional UX.
 
+//Dependency Array[menuOpen]:Effect sirf tab chalega jab menuOpen change hoga.
+
+//Cleanup return () => {
+// document.body.style.overflow = ""; }:Ye ensure karta hai ki jab component unmount ho jaye ya menu band ho jaye, tab bhi page scroll wapas enable ho jaye.//Menu band hone par scroll wapas enable.
+//This effect disables background scrolling when the mobile navigation menu is open.
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
-
+//*NAVIGATION FUNCTION*//
+//Purpose: Page navigation handle karna.
+//The navigate function changes the current page, closes the mobile menu, and automatically scrolls the user to the top of the new page.
   const navigate = (p) => { setPage(p); setMenuOpen(false); window.scrollTo(0, 0); };
 
   return (
@@ -430,11 +473,28 @@ function Navbar({ page, setPage }) {
    HOME PAGE
 ============================================================ */
 function HomePage({ setPage }) {
-  const [count, setCount] = useState({ a: 0, b: 0, c: 0 });
+  const [count, setCount] = useState({ a: 0, b: 0, c: 0 });//ye website per jo stats dekh rahy hain.un numbers ko store 
+  //karny ke liye useState hook ka use kiya hai. initially un numbers ko 0 set kiya gaya hai.
+  //  jab user scroll karega aur stats section visible hoga,
+  //  tab ye numbers animate hoke target values tak pahunch jayenge.
   const statsRef = useRef(null);
+ //statsRef ka use hum stats section ko reference dene ke liye kar rahe hain,
+ //  taki hum Intersection Observer ke through detect kar sakein ki jab ye section viewport mein aata hai.
+ //  jab statsRef.current viewport mein aayega, tab hum statsVisible state ko true set kar denge, 
+ //  jisse stats animate hona start ho jayenge.means jab user scroll karega aur stats section screen par aayega, 
   const [statsVisible, setStatsVisible] = useState(false);
+  //Check kar raha hai:Kya stats wala section screen par aa gaya?
+
+//initially false set kiya gaya hai, matlab stats section abhi tak visible nahi hai.
+//  Jab user scroll karega tou iski value true ho jayegi, jisse hum stats ko animate kar sakenge.
   const [particles] = useState(() =>
+    //Background mein jo choti choti floating dots hain,
+//unka data create karne ke liye useState hook ka use kiya gaya hai.
+//Har particle ke liye:
+//width,height,color,speed,position generate kar raha hai randomly, jisse background dynamic aur lively lage.
     Array.from({ length: 20 }, () => ({
+      //Math.random() JavaScript ka built-in method hai jo 0 aur 1 ke darmiyan random decimal number generate karta hai.
+      //  Isay random positions, sizes, colors aur animations banane ke liye use kiya jata hai.
       width: Math.random() * 3 + 1,
       height: Math.random() * 3 + 1,
       left: `${Math.random() * 100}%`,
@@ -444,18 +504,29 @@ function HomePage({ setPage }) {
       background: Math.random() > 0.5 ? "#6366f1" : "#22d3ee",
     }))
   );
-
+//First useEffect: Intersection Observer set up kar raha hai,
+//  jo check karega ki jab stats section screen par aayega, tab statsVisible state ko true set kar dega.
+//  Observer ka threshold 0.5 hai, matlab jab section ka 50% visible hoga tab trigger hoga.animation start ho jayega.
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsVisible(true); }, { threshold: 0.5 });
     if (statsRef.current) obs.observe(statsRef.current);
     return () => obs.disconnect();
   }, []);
-
+//Second useEffect :jab statsVisible true ho jata hai, tab ye effect run hota hai.
+//Wait kar raha hai. jab tak statsvisible false hai, tab tak kuch nahi karega. jab ye true ho jayega, tab ye effect execute hoga.
+//
   useEffect(() => {
     if (!statsVisible) return;
+    //Animation ko yahan tak jana hai.
+    //Targets define kar raha hai, matlab final numbers jin tak animate karna hai.
     const targets = { a: 250, b: 98, c: 32 };
+    //2 secondsTak animation chalegi.
     const duration = 2000;
+    //Start time record kar raha hai, taki hum animation ke progress ko calculate kar sakein.
     const start = Date.now();
+    //requestAnimationFrame ka use kar raha hai, jo browser ke next repaint ke time par callback function ko execute karta hai.
+    //Isse smooth animation milti hai, kyunki ye CPU aur GPU resources ko optimize karta hai.
+    //Numbers ko smoothly increase karta hai.
     const tick = () => {
       const t = Math.min((Date.now() - start) / duration, 1);
       const ease = 1 - Math.pow(1 - t, 3);
@@ -520,6 +591,7 @@ function HomePage({ setPage }) {
           </div>
 
           {/* Stats */}
+          //ye wahi section hai jo observer dekh raha hai.250+ Clients,98% Retention, 32+campaigns.//
           <div ref={statsRef} style={{ display: "flex", flexWrap: "wrap", gap: 48, marginTop: 72, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.07)", animation: "fadeUp 0.8s 0.6s ease forwards", opacity: 0 }}>
             {[
               { val: `${count.a}+`, label: "Clients Served" },
@@ -542,10 +614,11 @@ function HomePage({ setPage }) {
           <AnimatedSection style={{ textAlign: "center", marginBottom: 64 }}>
             <span style={{ display: "inline-block", fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#818cf8", marginBottom: 16 }}>What We Do</span>
             <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(2rem,4vw,2.75rem)", fontWeight: 800, color: "#fafafa", marginBottom: 16 }}>Services Built for Growth</h2>
-            <p style={{ fontSize: "1.1rem", color: "#a1a1aa", maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>End-to-end digital marketing solutions tailored to your goals, budget, and industry.</p>
+            <p style={{ fontSize: "1.1rem", color: "#a1a1aa", maxWidth: 520, margin: "0 auto", lineHeight: 1.7,}}>End-to-end digital marketing solutions tailored to your goals, budget, and industry.</p>
           </AnimatedSection>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+            //*Services array se cards create kar raha hai.*//
             {SERVICES.map((s, i) => (
               <AnimatedSection key={s.title} delay={i * 0.08}>
                 <Card3D style={{ height: "100%" }}>
@@ -876,11 +949,22 @@ function WorkPage({ setPage }) {
 /* ============================================================
    TESTIMONIALS PAGE
 ============================================================ */
+//Testimonials page component.
+//Jab user Testimonials page open karta hai to yeh function run hota hai aur UI return karta hai.
 function TestimonialsPage() {
+  //Store karta hai:
+  //Abhi konsa testimonial show ho raha hai?. agar iski initiall value 0 hogi to pehla testimonial show hoga.
   const [active, setActive] = useState(0);
-
+  //useEffect
+//Component render hone ke baad code chalata hai.
   useEffect(() => {
+    //setInterval ek function hai jo har kuch seconds baad code run karta hai. Is case me, har 4 seconds baad active testimonial ko update karta hai.
+    //Matlab 4 testimonials hain.
+    //*% module operator hai jo ensure karta hai ki jab active testimonial 3 (last one) tak pahunch jaye, to wapas se pehle testimonial (0) par aa jaye.
+    //  Isse kya hota hai ki testimonials continuously loop karte rahenge bina rukawat ke.
+    //Carousel ko continuously loop karwata hai.
     const id = setInterval(() => setActive(a => (a + 1) % TESTIMONIALS.length), 4000);
+    // Cleanup function return karta hai jo component ke unmount hone par setInterval ko clear kar deta hai. Isse memory leaks aur unwanted behavior se bachata hai.
     return () => clearInterval(id);
   }, []);
 
@@ -950,9 +1034,11 @@ function TestimonialsPage() {
    CONTACT PAGE
 ============================================================ */
 function ContactPage() {
+  //Tracks whether the form has been submitted. Initially set to false, meaning the form has not been submitted yet.
   const [submitted, setSubmitted] = useState(false);
+  //Stores all form data in one object. Initially, all fields (name, email, company, service, message) are empty strings.
   const [form, setForm] = useState({ name: "", email: "", company: "", service: "", message: "" });
-
+//e = Events.The event created when the user types something. e.target.name = The name attribute of the input field that triggered the event (e.g., "name", "email").
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   return (
@@ -1107,9 +1193,13 @@ function Footer({ setPage }) {
 /* ============================================================
    APP ROOT
 ============================================================ */
+//"App component is the root component of my website. It controls navigation and renders all pages."
 export default function App() {
+  //State variable "page" track karta hai ki abhi konsa page show ho raha hai. Initial value "home" hai, matlab jab user pehli baar website kholta hai to home page dikhai dega.
   const [page, setPage] = useState("home");
-
+//Changes page and scrolls to the top. Jab user navigation link par click karta hai to yeh function run hota hai. Yeh "page" state ko update karta hai jis se 
+// corresponding page component render hota hai. Saath hi, window.scrollTo function call karke page ke top par smoothly scroll karta hai,
+//  taaki user ko naya page dikhai dene par seamless experience mile.
   const navigateTo = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   const pages = {
@@ -1118,7 +1208,7 @@ export default function App() {
     about: <AboutPage setPage={navigateTo} />,
     work: <WorkPage setPage={navigateTo} />,
     testimonials: <TestimonialsPage setPage={navigateTo} />,
-    contact: <ContactPage />,
+    contact: <ContactPage setPage={navigateTo} />,
   };
 
   return (
