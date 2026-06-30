@@ -1,4 +1,7 @@
+
 import { useState, useEffect, useRef } from "react";
+import { askAssistant } from "./Lib/assistant.function";
+
 
 /* ============================================================
    DATA
@@ -382,143 +385,287 @@ function ServicesShowcase3D({ setPage }) {
             const blur = isActive ? 0 : Math.min(abs * 2.2, 8);
             const opacity = visible ? (isActive ? 1 : 1 - abs * 0.22) : 0;
 
-            return (
-              <button
-                key={s.title}
-                type="button"
-                onClick={() => setActive(i)}
-                onMouseEnter={() => isActive && setHovering(true)}
-                onMouseLeave={() => setHovering(false)}
-                aria-label={s.title}
-                style={{
-                  position: "absolute", top: "50%", left: "50%",
-                  width: "min(420px,78vw)", height: "min(540px,68vh)",
-                  marginLeft: "calc(min(420px,78vw) / -2)",
-                  marginTop: "calc(min(540px,68vh) / -2)",
-                  transform: `translate3d(${translateX}px,0,${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
-                  transition: "transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1), opacity 600ms ease",
-                  filter: `blur(${blur}px)`, opacity,
-                  zIndex: 100 - abs,
-                  pointerEvents: visible ? "auto" : "none",
-                  padding: 0, border: "none", background: "transparent",
-                  cursor: isActive ? "default" : "pointer",
-                  transformStyle: "preserve-3d",
-                }}
-              >
-                <div style={{
-                  position: "relative", height: "100%", width: "100%",
-                  borderRadius: 28, padding: 28, textAlign: "left", color: "#f5f6fb",
-                  background:
-                    "linear-gradient(160deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%)," +
-                    "linear-gradient(180deg,rgba(10,12,22,.85),rgba(10,12,22,.95))",
-                  border: "1px solid rgba(255,255,255,.08)",
-                  boxShadow: isActive
-                    ? `0 40px 120px -20px ${accent}55, 0 10px 40px -10px ${accent2}40, inset 0 1px 0 rgba(255,255,255,.08)`
-                    : "0 20px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)",
-                  overflow: "hidden", backdropFilter: "blur(12px)",
-                  display: "flex", flexDirection: "column",
-                }}>
-                  {/* Aurora glow */}
-                  <div aria-hidden style={{
-                    position: "absolute", top: -120, right: -120,
-                    width: 320, height: 320, borderRadius: "50%",
-                    background: `radial-gradient(closest-side, ${s.color}55, transparent 70%)`,
-                    filter: "blur(20px)", animation: "ssPulseGlow 4s ease-in-out infinite",
-                    pointerEvents: "none",
-                  }}/>
-                  <div aria-hidden style={{
-                    position: "absolute", bottom: -140, left: -100,
-                    width: 320, height: 320, borderRadius: "50%",
-                    background: `radial-gradient(closest-side, ${accent2}44, transparent 70%)`,
-                    filter: "blur(24px)", pointerEvents: "none",
-                  }}/>
+return (
+  <div
+    key={s.title}
+    role="button"
+    tabIndex={0}
+    onClick={() => setActive(i)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setActive(i);
+      }
+    }}
+    onMouseEnter={() => isActive && setHovering(true)}
+    onMouseLeave={() => setHovering(false)}
+    aria-label={s.title}
+    style={{
+      position: "absolute", top: "50%", left: "50%",
+      width: "min(420px,78vw)", height: "min(540px,68vh)",
+      marginLeft: "calc(min(420px,78vw) / -2)",
+      marginTop: "calc(min(540px,68vh) / -2)",
+      transform: `translate3d(${translateX}px,0,${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+      transition: "transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1), opacity 600ms ease",
+      filter: `blur(${blur}px)`, opacity,
+      zIndex: 100 - abs,
+      pointerEvents: visible ? "auto" : "none",
+      padding: 0, border: "none", background: "transparent",
+      cursor: isActive ? "default" : "pointer",
+      transformStyle: "preserve-3d",
+      outline: "none" 
+    }}
+  >
+    <div style={{
+      position: "relative", height: "100%", width: "100%",
+      borderRadius: 28, padding: 28, textAlign: "left", color: "#f5f6fb",
+      background:
+        "linear-gradient(160deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%)," +
+        "linear-gradient(180deg,rgba(10,12,22,.85),rgba(10,12,22,.95))",
+      border: "1px solid rgba(255,255,255,.08)",
+      boxShadow: isActive
+        ? `0 40px 120px -20px ${accent}55, 0 10px 40px -10px ${accent2}40, inset 0 1px 0 rgba(255,255,255,.08)`
+        : "0 20px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)",
+      overflow: "hidden", backdropFilter: "blur(12px)",
+      display: "flex", flexDirection: "column",
+    }}>
+      {/* Aurora glow */}
+      <div aria-hidden style={{
+        position: "absolute", top: -120, right: -120,
+        width: 320, height: 320, borderRadius: "50%",
+        background: `radial-gradient(closest-side, ${s.color}55, transparent 70%)`,
+        filter: "blur(20px)", animation: "ssPulseGlow 4s ease-in-out infinite",
+        pointerEvents: "none",
+      }}/>
+      <div aria-hidden style={{
+        position: "absolute", bottom: -140, left: -100,
+        width: 320, height: 320, borderRadius: "50%",
+        background: `radial-gradient(closest-side, ${accent2}44, transparent 70%)`,
+        filter: "blur(24px)", pointerEvents: "none",
+      }}/>
 
-                  {/* Icon */}
-                  <div style={{
-                    position: "relative", width: 64, height: 64, borderRadius: 18,
-                    display: "grid", placeItems: "center", fontSize: 30,
-                    background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
-                    boxShadow: `0 10px 30px -10px ${s.color}aa`,
-                  }}>
-                    {s.icon}
-                  </div>
+      {/* Icon */}
+      <div style={{
+        position: "relative", width: 64, height: 64, borderRadius: 18,
+        display: "grid", placeItems: "center", fontSize: 30,
+        background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
+        boxShadow: `0 10px 30px -10px ${s.color}aa`,
+      }}>
+        {s.icon}
+      </div>
 
-                  {/* Stat badge */}
-                  <div style={{
-                    position: "absolute", top: 28, right: 28,
-                    display: "inline-flex", alignItems: "baseline", gap: 8,
-                    padding: "8px 14px", borderRadius: 999,
-                    border: "1px solid rgba(255,255,255,.12)",
-                    background: "rgba(255,255,255,.04)", backdropFilter: "blur(10px)",
-                    fontSize: 12, color: "rgba(255,255,255,.8)",
-                  }}>
-                    <span style={{ fontWeight: 700, color: "#fff", fontSize: 14, letterSpacing: "-0.01em" }}>
-                      {s.stats[0]}
-                    </span>
-                    <span style={{ opacity: .7 }}>{s.stats[1]}</span>
-                  </div>
+      {/* Stat badge */}
+      <div style={{
+        position: "absolute", top: 28, right: 28,
+        display: "inline-flex", alignItems: "baseline", gap: 8,
+        padding: "8px 14px", borderRadius: 999,
+        border: "1px solid rgba(255,255,255,.12)",
+        background: "rgba(255,255,255,.04)", backdropFilter: "blur(10px)",
+        fontSize: 12, color: "rgba(255,255,255,.8)",
+      }}>
+        <span style={{ fontWeight: 700, color: "#fff", fontSize: 14, letterSpacing: "-0.01em" }}>
+          {s.stats[0]}
+        </span>
+        <span style={{ opacity: .7 }}>{s.stats[1]}</span>
+      </div>
 
-                  {/* Body */}
-                  <div style={{ marginTop: "auto", position: "relative" }}>
-                    <div style={{
-                      fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase",
-                      color: "rgba(255,255,255,.55)", marginBottom: 10,
-                    }}>
-                      {String(i + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
-                    </div>
-                    <h3 style={{
-                      margin: 0, fontFamily: "'Playfair Display',serif",
-                      fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.02em", fontWeight: 700,
-                    }}>{s.title}</h3>
-                    <p style={{ margin: "12px 0 0", color: "rgba(229,231,235,.7)", fontSize: 15, lineHeight: 1.6 }}>
-                      {s.description}
-                    </p>
+      {/* Body */}
+      <div style={{ marginTop: "auto", position: "relative" }}>
+        <div style={{
+          fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase",
+          color: "rgba(255,255,255,.55)", marginBottom: 10,
+        }}>
+          {String(i + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
+        </div>
+        <h3 style={{
+          margin: 0, fontFamily: "'Playfair Display',serif",
+          fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.02em", fontWeight: 700,
+        }}>{s.title}</h3>
+        <p style={{ margin: "12px 0 0", color: "rgba(229,231,235,.7)", fontSize: 15, lineHeight: 1.6 }}>
+          {s.description}
+        </p>
 
-                    {/* Hover reveal */}
-                    <div style={{
-                      display: "grid",
-                      gridTemplateRows: isActive && hovering ? "1fr" : "0fr",
-                      transition: "grid-template-rows 500ms ease",
-                    }}>
-                      <div style={{ overflow: "hidden" }}>
-                        <p style={{
-                          margin: "14px 0 0", fontSize: 13, lineHeight: 1.7,
-                          color: "rgba(229,231,235,.6)",
-                          animation: isActive && hovering ? "ssFadeUp 500ms ease both" : undefined,
-                        }}>
-                          {s.detail}
-                        </p>
-                      </div>
-                    </div>
+        {/* Hover reveal */}
+        <div style={{
+          display: "grid",
+          gridTemplateRows: isActive && hovering ? "1fr" : "0fr",
+          transition: "grid-template-rows 500ms ease",
+        }}>
+          <div style={{ overflow: "hidden" }}>
+            <p style={{
+              margin: "14px 0 0", fontSize: 13, lineHeight: 1.7,
+              color: "rgba(229,231,235,.6)",
+              animation: isActive && hovering ? "ssFadeUp 500ms ease both" : undefined,
+            }}>
+              {s.detail}
+            </p>
+          </div>
+        </div>
 
-                    {/* CTA */}
-                    <div style={{ marginTop: 22 }}>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setPage && setPage("services"); }}
-                        style={{
-                          position: "relative", display: "inline-flex", alignItems: "center", gap: 10,
-                          padding: "12px 18px", borderRadius: 14, fontSize: 14, fontWeight: 700,
-                          color: "#0b0c14", border: "none", cursor: "pointer",
-                          background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
-                          boxShadow: `0 12px 30px -12px ${s.color}cc`,
-                          overflow: "hidden", fontFamily: "inherit",
-                        }}
-                      >
-                        Explore Service ›
-                        <span aria-hidden style={{
-                          position: "absolute", inset: 0,
-                          background: "linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent)",
-                          backgroundSize: "200% 100%", animation: "ssShimmer 2.6s linear infinite",
-                          mixBlendMode: "overlay", pointerEvents: "none",
-                        }}/>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        {/* CTA */}
+        <div style={{ marginTop: 22 }}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setPage && setPage("contact"); }}
+            style={{
+              position: "relative", display: "inline-flex", alignItems: "center", gap: 10,
+              padding: "12px 18px", borderRadius: 14, fontSize: 14, fontWeight: 700,
+              color: "#0b0c14", border: "none", cursor: "pointer",
+              background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
+              boxShadow: `0 12px 30px -12px ${s.color}cc`,
+              overflow: "hidden", fontFamily: "inherit",
+            }}
+          >
+            Explore Service ›
+            <span aria-hidden style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent)",
+              backgroundSize: "200% 100%", animation: "ssShimmer 2.6s linear infinite",
+              mixBlendMode: "overlay", pointerEvents: "none",
+            }}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+        //             return (
+        //       <button
+        //         key={s.title}
+        //         type="button"
+        //         onClick={() => setActive(i)}
+        //         onMouseEnter={() => isActive && setHovering(true)}
+        //         onMouseLeave={() => setHovering(false)}
+        //         aria-label={s.title}
+        //         style={{
+        //           position: "absolute", top: "50%", left: "50%",
+        //           width: "min(420px,78vw)", height: "min(540px,68vh)",
+        //           marginLeft: "calc(min(420px,78vw) / -2)",
+        //           marginTop: "calc(min(540px,68vh) / -2)",
+        //           transform: `translate3d(${translateX}px,0,${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+        //           transition: "transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1), opacity 600ms ease",
+        //           filter: `blur(${blur}px)`, opacity,
+        //           zIndex: 100 - abs,
+        //           pointerEvents: visible ? "auto" : "none",
+        //           padding: 0, border: "none", background: "transparent",
+        //           cursor: isActive ? "default" : "pointer",
+        //           transformStyle: "preserve-3d",
+        //         }}
+        //       >
+        //         <div style={{
+        //           position: "relative", height: "100%", width: "100%",
+        //           borderRadius: 28, padding: 28, textAlign: "left", color: "#f5f6fb",
+        //           background:
+        //             "linear-gradient(160deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 60%)," +
+        //             "linear-gradient(180deg,rgba(10,12,22,.85),rgba(10,12,22,.95))",
+        //           border: "1px solid rgba(255,255,255,.08)",
+        //           boxShadow: isActive
+        //             ? `0 40px 120px -20px ${accent}55, 0 10px 40px -10px ${accent2}40, inset 0 1px 0 rgba(255,255,255,.08)`
+        //             : "0 20px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)",
+        //           overflow: "hidden", backdropFilter: "blur(12px)",
+        //           display: "flex", flexDirection: "column",
+        //         }}>
+        //           {/* Aurora glow */}
+        //           <div aria-hidden style={{
+        //             position: "absolute", top: -120, right: -120,
+        //             width: 320, height: 320, borderRadius: "50%",
+        //             background: `radial-gradient(closest-side, ${s.color}55, transparent 70%)`,
+        //             filter: "blur(20px)", animation: "ssPulseGlow 4s ease-in-out infinite",
+        //             pointerEvents: "none",
+        //           }}/>
+        //           <div aria-hidden style={{
+        //             position: "absolute", bottom: -140, left: -100,
+        //             width: 320, height: 320, borderRadius: "50%",
+        //             background: `radial-gradient(closest-side, ${accent2}44, transparent 70%)`,
+        //             filter: "blur(24px)", pointerEvents: "none",
+        //           }}/>
+
+        //           {/* Icon */}
+        //           <div style={{
+        //             position: "relative", width: 64, height: 64, borderRadius: 18,
+        //             display: "grid", placeItems: "center", fontSize: 30,
+        //             background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
+        //             boxShadow: `0 10px 30px -10px ${s.color}aa`,
+        //           }}>
+        //             {s.icon}
+        //           </div>
+
+        //           {/* Stat badge */}
+        //           <div style={{
+        //             position: "absolute", top: 28, right: 28,
+        //             display: "inline-flex", alignItems: "baseline", gap: 8,
+        //             padding: "8px 14px", borderRadius: 999,
+        //             border: "1px solid rgba(255,255,255,.12)",
+        //             background: "rgba(255,255,255,.04)", backdropFilter: "blur(10px)",
+        //             fontSize: 12, color: "rgba(255,255,255,.8)",
+        //           }}>
+        //             <span style={{ fontWeight: 700, color: "#fff", fontSize: 14, letterSpacing: "-0.01em" }}>
+        //               {s.stats[0]}
+        //             </span>
+        //             <span style={{ opacity: .7 }}>{s.stats[1]}</span>
+        //           </div>
+
+        //           {/* Body */}
+        //           <div style={{ marginTop: "auto", position: "relative" }}>
+        //             <div style={{
+        //               fontSize: 12, letterSpacing: ".22em", textTransform: "uppercase",
+        //               color: "rgba(255,255,255,.55)", marginBottom: 10,
+        //             }}>
+        //               {String(i + 1).padStart(2, "0")} / {String(SERVICES.length).padStart(2, "0")}
+        //             </div>
+        //             <h3 style={{
+        //               margin: 0, fontFamily: "'Playfair Display',serif",
+        //               fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.02em", fontWeight: 700,
+        //             }}>{s.title}</h3>
+        //             <p style={{ margin: "12px 0 0", color: "rgba(229,231,235,.7)", fontSize: 15, lineHeight: 1.6 }}>
+        //               {s.description}
+        //             </p>
+
+        //             {/* Hover reveal */}
+        //             <div style={{
+        //               display: "grid",
+        //               gridTemplateRows: isActive && hovering ? "1fr" : "0fr",
+        //               transition: "grid-template-rows 500ms ease",
+        //             }}>
+        //               <div style={{ overflow: "hidden" }}>
+        //                 <p style={{
+        //                   margin: "14px 0 0", fontSize: 13, lineHeight: 1.7,
+        //                   color: "rgba(229,231,235,.6)",
+        //                   animation: isActive && hovering ? "ssFadeUp 500ms ease both" : undefined,
+        //                 }}>
+        //                   {s.detail}
+        //                 </p>
+        //               </div>
+        //             </div>
+
+        //             {/* CTA */}
+        //             <div style={{ marginTop: 22 }}>
+        //               <button
+        //                 type="button"
+        //                 onClick={(e) => { e.stopPropagation(); setPage && setPage("contact"); }}
+        //                 style={{
+        //                   position: "relative", display: "inline-flex", alignItems: "center", gap: 10,
+        //                   padding: "12px 18px", borderRadius: 14, fontSize: 14, fontWeight: 700,
+        //                   color: "#0b0c14", border: "none", cursor: "pointer",
+        //                   background: `linear-gradient(135deg, ${s.color}, ${accent2})`,
+        //                   boxShadow: `0 12px 30px -12px ${s.color}cc`,
+        //                   overflow: "hidden", fontFamily: "inherit",
+        //                 }}
+        //               >
+        //                 Explore Service ›
+        //                 <span aria-hidden style={{
+        //                   position: "absolute", inset: 0,
+        //                   background: "linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent)",
+        //                   backgroundSize: "200% 100%", animation: "ssShimmer 2.6s linear infinite",
+        //                   mixBlendMode: "overlay", pointerEvents: "none",
+        //                 }}/>
+        //               </button>
+        //             </div>
+        //           </div>
+        //         </div>
+        //       </button>
+        //     );
+           })}
         </div>
 
         {/* Arrows — clickable, high z-index, above stage */}
@@ -753,25 +900,14 @@ function HomePage({ setPage }) {
             </button>
           </div>
 
-          <div ref={statsRef} style={{ display: "flex", flexWrap: "wrap", gap: 48, marginTop: 72, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.07)", animation: "fadeUp 0.8s 0.6s ease forwards", opacity: 0, justifyContent: "center" ,gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  width: "100%",
-  maxWidth: 1100,
-  margin: "72px auto 0"
-}}>
+          <div ref={statsRef} style={{ display: "flex", flexWrap: "wrap", gap: 48, marginTop: 72, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.07)", animation: "fadeUp 0.8s 0.6s ease forwards", opacity: 0, justifyContent: "center" }}>
             {[
               { val: `${count.a}+`, label: "Clients Served" },
               { val: "3.2x", label: "Avg. ROI Increase" },
               { val: `${count.b}%`, label: "Client Retention" },
               { val: `${count.c}+`, label: "Campaigns Launched" },
             ].map((s) => (
-              <div key={s.label} style={{ textAlign: "center",padding: "32px 24px", 
-        background: "#12121c", // Aapka core dark background template color
-        border: "1px solid rgba(255,255,255,0.06)", 
-        borderRadius: 20, 
-        boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)", // Soft clean shadow layers
-        position: "relative",
-        overflow: "hidden",
-        transition:" transform 0.3s ease, border-color 0.3s ease" }}>
+              <div key={s.label} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "2.5rem", color: "#fafafa", lineHeight: 1, marginBottom: 6, letterSpacing: "0.05em" }}>{s.val}</div>
                 <div style={{ fontSize: 14, color: "#a1a1aa" }}>{s.label}</div>
               </div>
@@ -1513,9 +1649,193 @@ function ContactPage() {
           .contact-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
         }
       `}</style>
+        <AskAIWidget/>
     </main>
   );
 }
+/* ============================================================
+   ASK AI WIDGET (Contact page)
+============================================================ */
+// function AskAIWidget() {
+//   const [question, setQuestion] = useState("");
+//   const [useAI, setUseAI] = useState(true);
+//   const [loading, setLoading] = useState(false);
+//   const [result, setResult] = useState(null);
+//   const [error, setError] = useState("");
+
+//   const ask = async () => {
+//     if (!question.trim()) return;
+//     setLoading(true); setError(""); setResult(null);
+//     try {
+//       const res = await askAssistant({ data: { question: question.trim(), useAI } });
+//       setResult(res);
+//     } catch (e) {
+//       setError(e?.message || "Something went wrong.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
+//       <AnimatedSection>
+//         <div style={{ padding: 40, background: "linear-gradient(160deg,#12121c,#0c0c14)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+//           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+//             <span style={{ fontSize: 24 }}>🤖</span>
+//             <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.6rem", color: "#fafafa", margin: 0 }}>
+//               Ask Our <span style={{ background: "linear-gradient(135deg,#6366f1,#22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI Assistant</span>
+//             </h2>
+//           </div>
+//           <p style={{ color: "#a1a1aa", marginBottom: 24, fontSize: 14 }}>
+//             Ask anything about our services. Toggle "AI Reply" off to search our service catalog directly.
+//           </p>
+
+//           <textarea
+//             rows={3}
+//             value={question}
+//             onChange={(e) => setQuestion(e.target.value)}
+//             placeholder='e.g. "How can you help me rank on Google?"'
+//             style={{ width: "100%", padding: "14px 16px", background: "#08080e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fafafa", fontSize: 15, outline: "none", fontFamily: "inherit", resize: "vertical", marginBottom: 16 }}
+//             onFocus={(e) => (e.target.style.borderColor = "#6366f1")}
+//             onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+//           />
+
+//           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
+//             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
+//               <input
+//                 type="checkbox"
+//                 checked={useAI}
+//                 onChange={(e) => setUseAI(e.target.checked)}
+//                 style={{ width: 18, height: 18, accentColor: "#6366f1", cursor: "pointer" }}
+//               />
+//               <span style={{ color: "#fafafa", fontSize: 14, fontWeight: 600 }}>
+//                 AI Reply {useAI ? "✨" : "(off — DB search)"}
+//               </span>
+//             </label>
+//             <button
+//               onClick={ask}
+//               disabled={loading || !question.trim()}
+//               style={{
+//                 padding: "12px 28px",
+//                 background: loading || !question.trim() ? "#2a2a3a" : "linear-gradient(135deg,#6366f1,#22d3ee)",
+//                 border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700,
+//                 cursor: loading || !question.trim() ? "not-allowed" : "pointer",
+//                 fontFamily: "inherit", boxShadow: "0 4px 20px rgba(99,102,241,0.25)",
+//               }}
+//             >
+//               {loading ? "Thinking…" : useAI ? "Ask AI →" : "Search →"}
+//             </button>
+//           </div>
+
+//           {error && (
+//             <div style={{ padding: 16, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 12, color: "#fca5a5", fontSize: 14 }}>
+//               {error}
+//             </div>
+//           )}
+
+//           {result && (
+//             <div style={{ padding: 20, background: "#08080e", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 14 }}>
+//               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: result.mode === "ai" ? "#22d3ee" : "#818cf8", marginBottom: 10 }}>
+//                 {result.mode === "ai" ? "AI Response" : "Database Search Results"}
+//               </div>
+//               <div style={{ color: "#fafafa", fontSize: 15, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+//                 {result.answer}
+//               </div>
+//               {result.mode === "ai" && result.sources?.length > 0 && (
+//                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: 12, color: "#71717a" }}>
+//                   Context used: {result.sources.join(", ")}
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//         </div>
+//       </AnimatedSection>
+//     </div>
+//   );
+// }
+
+function AskAIWidget() {
+  const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+
+  const ask = async () => {
+    if (!question.trim()) return;
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const res = await askAssistant({ question: question.trim() });
+      if (!res.success) throw new Error(res.error || "Something went wrong.");
+      setResult(res);
+    } catch (e) {
+      setError(e?.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto 100px", padding: "0 24px" }}>
+      <AnimatedSection>
+        <div style={{ padding: 40, background: "linear-gradient(160deg,#12121c,#0c0c14)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <span style={{ fontSize: 24 }}>🤖</span>
+            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "1.6rem", color: "#fafafa", margin: 0 }}>
+              Ask Our <span style={{ background: "linear-gradient(135deg,#6366f1,#22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AI Assistant</span>
+            </h2>
+          </div>
+          <p style={{ color: "#a1a1aa", marginBottom: 24, fontSize: 14 }}>
+            Ask anything about our services.
+          </p>
+
+          <textarea
+            rows={3}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder='e.g. "How can you help me rank on Google?"'
+            style={{ width: "100%", padding: "14px 16px", background: "#08080e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fafafa", fontSize: 15, outline: "none", fontFamily: "inherit", resize: "vertical", marginBottom: 16 }}
+            onFocus={(e) => (e.target.style.borderColor = "#6366f1")}
+            onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+          />
+
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+            <button
+              onClick={ask}
+              disabled={loading || !question.trim()}
+              style={{
+                padding: "12px 28px",
+                background: loading || !question.trim() ? "#2a2a3a" : "linear-gradient(135deg,#6366f1,#22d3ee)",
+                border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700,
+                cursor: loading || !question.trim() ? "not-allowed" : "pointer",
+                fontFamily: "inherit", boxShadow: "0 4px 20px rgba(99,102,241,0.25)",
+              }}
+            >
+              {loading ? "Thinking…" : "Ask AI →"}
+            </button>
+          </div>
+
+          {error && (
+            <div style={{ padding: 16, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 12, color: "#fca5a5", fontSize: 14 }}>
+              {error}
+            </div>
+          )}
+
+          {result && (
+            <div style={{ padding: 20, background: "#08080e", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#22d3ee", marginBottom: 10 }}>
+                AI Response
+              </div>
+              <div style={{ color: "#fafafa", fontSize: 15, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                {result.answer}
+              </div>
+            </div>
+          )}
+        </div>
+      </AnimatedSection>
+    </div>
+  );
+}
+
 /* ============================================================
    FOOTER
 ============================================================ */
